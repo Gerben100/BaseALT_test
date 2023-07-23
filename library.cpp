@@ -2,9 +2,7 @@
 #include <string>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
-#include <vector>
-#include <string>
-#include "library.h"
+#include <fstream>
 
 // Callback-функция для обработки полученных данных
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, std::string* output) {
@@ -22,25 +20,6 @@ nlohmann::json parseJsonStructures(const std::string& jsonString) {
     catch (const std::exception& e) {
         std::cerr << "Ошибка при разборе JSON-данных: " << e.what() << std::endl;
     }
-}
-
-nlohmann::json compareJsonStructures(const std::string& sisyphus_response, const std::string& p10_response)
-{
-    //парсим строки в json
-    nlohmann::json jsonSis = parseJsonStructures(sisyphus_response);
-    nlohmann::json jsonP10 = parseJsonStructures(p10_response);
-    nlohmann::json resultJson;
-
-    //получаем результат по первому критерию
-    existencePackages( jsonSis, jsonP10, resultJson);
-    //получаем результат по первому критерию
-    existencePackages( jsonP10, jsonSis, resultJson);
-    //получаем результат по третьему критерию
-    versionComparison( jsonSis, jsonP10, resultJson);
-
-    //выводим результат
-    printJsonStructure(resultJson);
-    return resultJson;
 }
 
 void existencePackages(nlohmann::json jsonSis, nlohmann::json jsonP10, nlohmann::json& resultJson)
@@ -66,16 +45,40 @@ void versionComparison(nlohmann::json jsonSis, nlohmann::json jsonP10, nlohmann:
     }
 }
 
-void printJsonStructure(nlohmann::json& resultJson) {
+std::vector<std::string> findArch(const std::string jsonString, std::vector<std::string> arch)
+{
+    //парсим строку в json
+    nlohmann::json json = parseJsonStructures(jsonString);
+
+    //находим все типы используемых архитектур
+    bool indicator = false;
+    arch.emplace_back(json["packages"][0]["arch"]);
+    for (const auto& currentObject : json["packages"]) {
+        for (int j = 0; j < arch.size(); j++)
+        {
+            if (currentObject["arch"] == arch[j]) indicator = true;
+        }
+        if (indicator == false)
+        {
+            arch.emplace_back(currentObject["arch"]);
+        }
+        indicator = false;
+    }
+    return arch;
+}
+
+void printJsonStructure(nlohmann::json& resultJson, std::string nameFile) {
+    std::ofstream outputFile(nameFile);
     if (resultJson.is_array()) {
         for (const auto &jsonObject : resultJson) {
             // Выводим каждую JSON-структуру с отступами для улучшенной читабельности
-            std::cout << jsonObject.dump(4) << std::endl;
+            outputFile << resultJson.dump(4) << std::endl;
         }
     } else {
         // Если в ответе только одна JSON-структура, просто выведем ее на экран
-        std::cout << resultJson.dump(4) << std::endl;
+        outputFile << resultJson.dump(4) << std::endl;
     }
+    outputFile.close();
 }
 
 std::string performGetRequest(const std::string& url) {
@@ -110,13 +113,4 @@ std::string performGetRequest(const std::string& url) {
 
     curl_global_cleanup();
     return response_data;
-}
-
-int main() {
-    std::string url = "https://rdb.altlinux.org/api/export/branch_binary_packages/";
-    std::string response_data = performGetRequest(url);
-
-    std::cout << "Ответ сервера: " << response_data << std::endl;
-
-    return 0;
 }

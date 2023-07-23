@@ -1,9 +1,27 @@
 #include <iostream>
-#include <Windows.h>
 #include "library.h"
-#include <nlohmann/json.hpp>
-#include <vector>
-#include <fstream>
+#include <thread>
+
+void compareJsonStructures(std::string sisyphus, std::string p10, std::string arch, std::vector<nlohmann::json>& resultJson, int i)
+{
+    //делаем get запрос к API
+    std::string sisyphus_response = performGetRequest(sisyphus);
+    std::string p10_response = performGetRequest(p10);
+    //парсим строки в json
+    nlohmann::json jsonSis = parseJsonStructures(sisyphus_response);
+    nlohmann::json jsonP10 = parseJsonStructures(p10_response);
+
+    //получаем результат по первому критерию
+    std::cout<<"Let's compare by the first criterion: "<<arch<<std::endl;
+    existencePackages( jsonSis, jsonP10, resultJson[i]);
+    //получаем результат по второму критерию
+    std::cout<<"Let's compare by the second criterion: "<<arch<<std::endl;
+    existencePackages( jsonP10, jsonSis, resultJson[i]);
+    //получаем результат по третьему критерию
+    std::cout<<"Let's compare by the third criterion: "<<arch<<std::endl;
+    versionComparison( jsonSis, jsonP10, resultJson[i]);
+
+}
 
 using namespace std;
 
@@ -11,58 +29,55 @@ int main() {
     system("chcp 65001");
 
     //считываем ветки sisyphus и p10
-    std::string branch1 = "sisyphus", branch2 = "p10";
+    std::string branch1 = "sisyphus", branch2 = "p10", arch = "aarch64";
+
     std::string sisyphus_url = "https://rdb.altlinux.org/api/export/branch_binary_packages/" + branch1;
-    std::string p10_url = "https://rdb.altlinux.org/api/export/branch_binary_packages/" + branch2;
+    std::string p10_url = "https://rdb.altlinux.org/api/export/branch_binary_packages/" + branch2; // + "?arch=" + arch
 
     std::string sisyphus_response = performGetRequest(sisyphus_url);
     std::string p10_response = performGetRequest(p10_url);
 
-    sisyphus_response = R"({
-        "request_args": {"arch": null},
-        "length": 186171,
-        "packages": [
-            {"name": "0ad", "epoch": 1, "version": "0.1.26", "release": "alt0_3_alpha", "arch": "aarch64", "disttag": "sisyphus+319112.500.3.2", "buildtime": 1682252652, "source": "0ad"},
-            {"name": "0ad-debuginfo", "epoch": 1, "version": "0.0.26", "release": "alt0_3_alpha", "arch": "aarch64", "disttag": "sisyphus+319112.500.3.2", "buildtime": 1682252652, "source": "0ad"},
-            {"name": "389-ds-base", "epoch": 0, "version": "2.2.10", "release": "alt2", "arch": "aarch64", "disttag": "sisyphus+324359.4400.11.1", "buildtime": 1689366562, "source": "389-ds-base"},
-            {"name": "389-ds-base-debuginfo", "epoch": 0, "version": "2.2.8", "release": "alt1", "arch": "aarch64", "disttag": "sisyphus+324359.4400.11.1", "buildtime": 1689366562, "source": "389-ds-base"},
-            {"name": "389-ds-base-deve", "epoch": 0, "version": "2.2.8", "release": "alt1", "arch": "aarch64", "disttag": "sisyphus+324359.4400.11.1", "buildtime": 1689366562, "source": "389-ds-base"}
-        ]
-    })";
+    std::vector<std::string> arch0,arch2,arch1;
+    arch1 = findArch(sisyphus_response, arch1);
+    arch2 = findArch(p10_response, arch2);
+    arch0.reserve(arch1.size() + arch2.size());
+    std::set_union(arch1.begin(), arch1.end(), arch2.begin(), arch2.end(), std::back_inserter(arch0));
 
-    p10_response = R"({
-        "request_args": {"arch": null},
-        "length": 186171,
-        "packages": [
-            {"name": "0ad", "epoch": 1, "version": "0.0.261", "release": "alt0_3_alpha", "arch": "aarch64", "disttag": "sisyphus+319112.500.3.2", "buildtime": 1682252652, "source": "0ad"},
-            {"name": "0ad-debuginfo", "epoch": 1, "version": "0.0.26", "release": "alt0_3_alpha", "arch": "aarch64", "disttag": "sisyphus+319112.500.3.2", "buildtime": 1682252652, "source": "0ad"},
-            {"name": "389-ds-base", "epoch": 0, "version": "2.2.8", "release": "alt1", "arch": "aarch64", "disttag": "sisyphus+324359.4400.11.1", "buildtime": 1689366562, "source": "389-ds-base"},
-            {"name": "389-ds-base-debuginfo", "epoch": 0, "version": "2.2.8", "release": "alt1", "arch": "aarch64", "disttag": "sisyphus+324359.4400.11.1", "buildtime": 1689366562, "source": "389-ds-base"},
-            {"name": "389-ds-base-deve", "epoch": 0, "version": "2.2.7", "release": "alt1", "arch": "aarch64", "disttag": "sisyphus+324359.4400.11.1", "buildtime": 1689366562, "source": "389-ds-base"},
-            {"name": "389-ds-base-devel2", "epoch": 0, "version": "2.2.8", "release": "alt1", "arch": "aarch64", "disttag": "sisyphus+324359.4400.11.1", "buildtime": 1689366562, "source": "389-ds-base"}
-        ]
-    })";
+    std::vector<std::thread> threads;
 
-    nlohmann::json resultJson = compareJsonStructures(sisyphus_response, p10_response);
+    // Создаем вектор для хранения результата, чтобы не записывать результат в потоках
+    std::vector<nlohmann::json> result(arch0.size());
 
-
-
-
-
-
-    /*
-    for (int i=0;i++;i<10) {
-        cout << sisyphus_response[i] << std::endl;
+    for (int i = 0; i < arch0.size(); i++)
+    {
+        if (arch0[i] != "null") {
+            std::string sisyphus_url = "https://rdb.altlinux.org/api/export/branch_binary_packages/" + branch1 + "?arch=" + arch0[i];
+            std::string p10_url = "https://rdb.altlinux.org/api/export/branch_binary_packages/" + branch2 + "?arch=" + arch0[i];
+            std::cout<<"Processing the: "<<arch0[i]<<std::endl;
+            threads.emplace_back(compareJsonStructures, sisyphus_url, p10_url, arch0[i], std::ref(result),i);
+        }
+    }
+    for (auto& thread : threads)
+    {
+        thread.join();
     }
 
-    //Обработка данных для ветки "sisyphus"
+    // Используем функцию system для создания папки
+    std::string out = "Outputs";
+    std::string command = "mkdir " + out;
+    std::system(command.c_str());
 
-    std::cout << "Список бинарных пакетов для ветки \"sisyphus\":" << std::endl;
-    std::cout << sisyphus_response << std::endl;
+    // Создаем json файлы и записываем в них результаты
+    for (int i = 0; i < arch0.size(); i++)
+    {
+        if (arch0[i] != "null") {
+            std::string command = "mkdir Outputs\\" + arch0[i];
+            std::system(command.c_str());
 
-    // Обработка данных для ветки "p10"
-    std::cout << "Список бинарных пакетов для ветки \"p10\":" << std::endl;
-    std::cout << p10_response << std::endl;
-*/
+            string currentFile = out + "\\" + arch0[i] + "\\" + arch0[i] + ".json";
+            printJsonStructure(result[i],currentFile);
+        }
+    }
+
     return 0;
 }
