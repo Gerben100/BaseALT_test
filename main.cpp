@@ -14,14 +14,13 @@ void compareJsonStructures(std::string sisyphus, std::string p10, std::string ar
     //получаем результат по первому критерию
     std::cout<<"Let's compare by the first criterion: "<<arch<<std::endl;
     existencePackages( jsonSis, jsonP10, resultJson[i]);
-    /*
     //получаем результат по второму критерию
     std::cout<<"Let's compare by the second criterion: "<<arch<<std::endl;
     existencePackages( jsonP10, jsonSis, resultJson[i]);
     //получаем результат по третьему критерию
     std::cout<<"Let's compare by the third criterion: "<<arch<<std::endl;
     versionComparison( jsonSis, jsonP10, resultJson[i]);
-*/
+
     // Создаем json файлы и записываем в них результаты
     std::string out = "Outputs";
 

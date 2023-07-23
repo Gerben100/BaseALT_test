@@ -72,7 +72,7 @@ void printJsonStructure(nlohmann::json& resultJson, std::string nameFile) {
     if (resultJson.is_array()) {
         for (const auto &jsonObject : resultJson) {
             // Выводим каждую JSON-структуру с отступами для улучшенной читабельности
-            outputFile << resultJson.dump(4) << std::endl;
+            outputFile << jsonObject.dump(4) << std::endl;
         }
     } else {
         // Если в ответе только одна JSON-структура, просто выведем ее на экран
