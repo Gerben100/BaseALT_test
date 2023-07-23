@@ -14,12 +14,24 @@ void compareJsonStructures(std::string sisyphus, std::string p10, std::string ar
     //получаем результат по первому критерию
     std::cout<<"Let's compare by the first criterion: "<<arch<<std::endl;
     existencePackages( jsonSis, jsonP10, resultJson[i]);
+    /*
     //получаем результат по второму критерию
     std::cout<<"Let's compare by the second criterion: "<<arch<<std::endl;
     existencePackages( jsonP10, jsonSis, resultJson[i]);
     //получаем результат по третьему критерию
     std::cout<<"Let's compare by the third criterion: "<<arch<<std::endl;
     versionComparison( jsonSis, jsonP10, resultJson[i]);
+*/
+    // Создаем json файлы и записываем в них результаты
+    std::string out = "Outputs";
+
+    if (arch != "null") {
+        std::string command = "mkdir " + out + "\\" + arch;
+        std::system(command.c_str());
+
+        std::string currentFile = out + "\\" + arch + "\\" + arch + ".json";
+        printJsonStructure(resultJson[i],currentFile);
+    }
 
 }
 
@@ -48,6 +60,11 @@ int main() {
     // Создаем вектор для хранения результата, чтобы не записывать результат в потоках
     std::vector<nlohmann::json> result(arch0.size());
 
+    // Используем функцию system для создания папки
+    std::string out = "Outputs";
+    std::string command = "mkdir " + out;
+    std::system(command.c_str());
+
     for (int i = 0; i < arch0.size(); i++)
     {
         if (arch0[i] != "null") {
@@ -60,23 +77,6 @@ int main() {
     for (auto& thread : threads)
     {
         thread.join();
-    }
-
-    // Используем функцию system для создания папки
-    std::string out = "Outputs";
-    std::string command = "mkdir " + out;
-    std::system(command.c_str());
-
-    // Создаем json файлы и записываем в них результаты
-    for (int i = 0; i < arch0.size(); i++)
-    {
-        if (arch0[i] != "null") {
-            std::string command = "mkdir Outputs\\" + arch0[i];
-            std::system(command.c_str());
-
-            string currentFile = out + "\\" + arch0[i] + "\\" + arch0[i] + ".json";
-            printJsonStructure(result[i],currentFile);
-        }
     }
 
     return 0;
