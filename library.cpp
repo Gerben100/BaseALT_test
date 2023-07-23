@@ -45,40 +45,36 @@ void versionComparison(nlohmann::json jsonSis, nlohmann::json jsonP10, nlohmann:
     }
 }
 
-std::vector<std::string> findArch(const std::string jsonString, std::vector<std::string> arch)
-{
+void printJsonStructure(nlohmann::json& resultJson, const std::string& nameFile) {
+    std::ofstream outputFile(nameFile);
+    if (outputFile.is_open()) {
+        if (resultJson.is_array()) {
+            for (const auto& jsonObject : resultJson) {
+                // Выводим каждую JSON-структуру с отступами для улучшенной читабельности
+                outputFile << jsonObject.dump(4) << std::endl;
+            }
+        } else {
+            // Если в ответе только одна JSON-структура, просто выведем ее на экран
+            outputFile << resultJson.dump(4) << std::endl;
+        }
+        outputFile.close();
+    } else {
+        std::cerr << "Ошибка: Невозможно открыть файл для записи: " << nameFile << std::endl;
+    }
+}
+
+std::vector<std::string> findArch(const std::string jsonString, std::vector<std::string>& arch) {
     //парсим строку в json
     nlohmann::json json = parseJsonStructures(jsonString);
 
     //находим все типы используемых архитектур
-    bool indicator = false;
-    arch.emplace_back(json["packages"][0]["arch"]);
     for (const auto& currentObject : json["packages"]) {
-        for (int j = 0; j < arch.size(); j++)
-        {
-            if (currentObject["arch"] == arch[j]) indicator = true;
-        }
-        if (indicator == false)
-        {
+        auto it = std::find(arch.begin(), arch.end(), currentObject["arch"]);
+        if (it == arch.end()) {
             arch.emplace_back(currentObject["arch"]);
         }
-        indicator = false;
     }
     return arch;
-}
-
-void printJsonStructure(nlohmann::json& resultJson, std::string nameFile) {
-    std::ofstream outputFile(nameFile);
-    if (resultJson.is_array()) {
-        for (const auto &jsonObject : resultJson) {
-            // Выводим каждую JSON-структуру с отступами для улучшенной читабельности
-            outputFile << jsonObject.dump(4) << std::endl;
-        }
-    } else {
-        // Если в ответе только одна JSON-структура, просто выведем ее на экран
-        outputFile << resultJson.dump(4) << std::endl;
-    }
-    outputFile.close();
 }
 
 std::string performGetRequest(const std::string& url) {

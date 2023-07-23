@@ -41,9 +41,10 @@ int main() {
 
     //считываем ветки sisyphus и p10
     std::string branch1 = "sisyphus", branch2 = "p10", arch = "aarch64";
-
+    std::cout<<"Enter branch names";
+    std::cin>>branch1>>branch2;
     std::string sisyphus_url = "https://rdb.altlinux.org/api/export/branch_binary_packages/" + branch1;
-    std::string p10_url = "https://rdb.altlinux.org/api/export/branch_binary_packages/" + branch2; // + "?arch=" + arch
+    std::string p10_url = "https://rdb.altlinux.org/api/export/branch_binary_packages/" + branch2;
 
     std::string sisyphus_response = performGetRequest(sisyphus_url);
     std::string p10_response = performGetRequest(p10_url);
