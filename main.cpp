@@ -37,7 +37,7 @@ void compareJsonStructures(std::string sisyphus, std::string p10, std::string ar
 using namespace std;
 
 int main() {
-    system("chcp 65001");
+    //system("chcp 65001");
 
     //считываем ветки sisyphus и p10
     std::string branch1 = "sisyphus", branch2 = "p10", arch = "aarch64";
