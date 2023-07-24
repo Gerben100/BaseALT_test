@@ -25,11 +25,11 @@ void compareJsonStructures(std::string sisyphus, std::string p10, std::string ar
     std::string out = "Outputs";
 
     if (arch != "null") {
-        std::string command = "mkdir " + out + "\\" + arch;
+        std::string command = "mkdir -p " + out + "/" + arch;
         std::system(command.c_str());
 
-        std::string currentFile = out + "\\" + arch + "\\" + arch + ".json";
-        printJsonStructure(resultJson[i],currentFile);
+        std::string currentFile = out + "/" + arch + "/" + arch + ".json";
+        printJsonStructure(resultJson[i], currentFile);
     }
 
 }
@@ -63,7 +63,7 @@ int main() {
 
     // Используем функцию system для создания папки
     std::string out = "Outputs";
-    std::string command = "mkdir " + out;
+    std::string command = "mkdir -p " + out;
     std::system(command.c_str());
 
     for (int i = 0; i < arch0.size(); i++)
