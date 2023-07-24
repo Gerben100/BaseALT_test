@@ -6,18 +6,13 @@ set(CMAKE_CXX_STANDARD 14)
 # Создаем разделяемую библиотеку
 add_library(test_task SHARED library.cpp library.h)
 
-# Находим и подключаем библиотеку libcurl
+# Находим и подключаем библиотеки libcurl и nlohmann/json
 find_package(CURL REQUIRED)
-
-# Линкуем библиотеку test_task с libcurl
-target_link_libraries(test_task PRIVATE CURL::libcurl)
-
-target_include_directories(test_task PRIVATE "C:/Users/raste/CLionProjects/test_task/include")
+find_package(nlohmann_json 3.2.0 REQUIRED)
+include_directories(${CURL_INCLUDE_DIRS} ${nlohmann_json_INCLUDE_DIRS})
 
 # Создаем исполняемый файл
 add_executable(test_task_main main.cpp)
 
-# Линкуем исполняемый файл с библиотекой test_task
-target_link_libraries(test_task_main PRIVATE test_task)
-
-target_include_directories(test_task_main PRIVATE "C:/Users/raste/CLionProjects/test_task/include")
+# Линкуем исполняемый файл с библиотекой test_task и библиотеками libcurl и nlohmann/json
+target_link_libraries(test_task_main PRIVATE test_task ${CURL_LIBRARIES} nlohmann_json::nlohmann_json)
