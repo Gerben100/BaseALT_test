@@ -33,13 +33,75 @@ void existencePackages(nlohmann::json jsonSis, nlohmann::json jsonP10, nlohmann:
     }
 }
 
+bool singleCompareVersion(std::string version1, std::string release1, std::string version2, std::string release2) {
+    version1 = version1 + release1;
+    version2 = version2 + release2;
+    int i = 0, j = 0, j0 = 0;
+    int number1 = 0, number2 = 0;
+    std::string buffer1 = "", buffer2 = "", buffer = "";
+
+    while (true) {
+
+        //check the end of the string
+        if (version1.size() == i && version2.size() == i) { return false; }
+        if (version1.size() == i) return false;
+        if (version2.size() == i) return true;
+
+        //trying to get a number
+        while (static_cast<int>(version1[i + j]) > 47 && static_cast<int>(version1[i + j]) < 58 &&
+               version1.size() > i + j) {
+            buffer = version1[i + j];
+            number1 = number1 * 10 + std::stoi(buffer);
+            j++;
+        }
+        j0 = j;
+        j = 0;
+
+        while (static_cast<int>(version2[i + j]) > 47 && static_cast<int>(version2[i + j]) < 58 &&
+               version2.size() > i + j) {
+            buffer = version2[i + j];
+            number2 = number2 * 10 + std::stoi(buffer);
+            j++;
+        }
+        //compare numbers
+        if (number1 > number2) return true;
+        if (number1 < number2) return false;
+        number1 = 0;
+        number2 = 0;
+        j = 0;
+
+        //if we don't get a number, we get a string
+        while (static_cast<int>(version1[i + j]) <= 47 ||
+               static_cast<int>(version1[i + j]) >= 58 && version1.size() > i + j) {
+            buffer1 += version1[i + j];
+            j++;
+        }
+        j = 0;
+
+        while (static_cast<int>(version2[i + j]) <= 47 ||
+               static_cast<int>(version2[i + j]) >= 58 && version2.size() > i + j) {
+            buffer2 += version2[i +j];
+            j++;
+        }
+        //compare strings
+        if (buffer1 > buffer2) return true;
+        if (buffer1 < buffer2) return false;
+        buffer1 = "";
+        buffer2 = "";
+
+        i = i + std::max(j,j0);
+        j = 0;
+        j0 = 0;
+    }
+}
+
 void versionComparison(nlohmann::json jsonSis, nlohmann::json jsonP10, nlohmann::json& resultJson)
 {
     for (const auto& currentObjectSis : jsonSis["packages"]) {
 
         auto itP10 = std::find_if( jsonP10["packages"].begin(),  jsonP10["packages"].end(), [&](const nlohmann::json&  currentP10) {
-            return (currentObjectSis["name"] == currentP10["name"] && currentObjectSis["release"] == currentP10["release"]
-                    && currentObjectSis["version"] > currentP10["version"]);});
+            return (currentObjectSis["name"] == currentP10["name"]
+            && singleCompareVersion(currentObjectSis["version"],currentObjectSis["release"],currentP10["version"],currentP10["release"]));});
 
         if (itP10 != jsonP10["packages"].end()) resultJson.push_back(currentObjectSis);
     }
@@ -51,7 +113,7 @@ void printJsonStructure(nlohmann::json& resultJson, const std::string& nameFile)
         if (resultJson.is_array()) {
             for (const auto& jsonObject : resultJson) {
                 // Выводим каждую JSON-структуру с отступами для улучшенной читабельности
-                outputFile << jsonObject.dump(4) << std::endl;
+                std::cout << jsonObject.dump(4) << std::endl;
             }
         } else {
             // Если в ответе только одна JSON-структура, просто выведем ее на экран
