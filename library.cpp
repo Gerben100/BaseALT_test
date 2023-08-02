@@ -19,6 +19,8 @@ nlohmann::json parseJsonStructures(const std::string& jsonString) {
     }
     catch (const std::exception& e) {
         std::cerr << "Ошибка при разборе JSON-данных: " << e.what() << std::endl;
+        nlohmann::json jsonData;
+        return jsonData;
     }
 }
 
