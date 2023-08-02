@@ -17,3 +17,14 @@ Now you can run the project executable:
 
 When you start, you will be asked for the name of the two branches from which you want to get the result.
 After the end of the program, the results will be saved to the "Outputs" folder (in the project folder)
+
+To run tests for the library.cpp library:
+
+Have the catch2 library installed (sudo apt-get install catch2-devel)
+
+Then you need to build this project and compile:
+cmake PATH_your_project
+make (to the project folder)
+
+Now you can run the project test:
+./test_task
