@@ -1,7 +1,7 @@
 # BaseALT_test
 To use this project on your system, you must:
 1) Have git and cmake installed (sudo apt-get install git, sudo apt-get install cmake)
-2) Have the nlohmann/json library installed (sudo apt-get install nlohmann-devel)
+2) Have the nlohmann/json library installed (sudo apt-get install nlohmann-json-devel)
 3) Have the libcurl library installed (sudo apt-get install libcurl-devel
 )
    
