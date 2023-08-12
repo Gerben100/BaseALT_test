@@ -27,4 +27,4 @@ cmake PATH_your_project
 make (to the project folder)
 
 Now you can run the project test:
-./test_task
+./test_test
