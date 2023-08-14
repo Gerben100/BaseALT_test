@@ -19,8 +19,11 @@ BuildRequires: nlohmann-json-devel
 Compares two selected branches with https://rdb.altlinux.org/api/ and outputs as a result: Packages that are in the first branch and not in the second, packages that are in the second and not in the first branch, and also displays those packages, the version-realis of which in the first branch is higher than in the second. For output, it creates an output folder and in it subfolders with the name of the architectures in which the results are stored
 
 %build
+cd %{_sourcedir}/BaseALT_test
 cmake .
 make
+cp %{_sourcedir}/BaseALT_test %{_builddir}/test_task_main
+cp %{_sourcedir}/BaseALT_test %{_builddir}/libtest_task.so
 
 %install
 mkdir -p %{buildroot}%{_bindir}
