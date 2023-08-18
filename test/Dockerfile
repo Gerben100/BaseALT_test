@@ -6,7 +6,7 @@ RUN apt-get update && \
     cmake \
     nlohmann-json-devel \
     libcurl-devel \
-    install catch2-devel
+    catch2-devel
 
 COPY BaseALT_test_unitTests-1.0-1.x86_64.rpm /app/BaseALT_test_unitTests-1.0-1.x86_64.rpm
 
