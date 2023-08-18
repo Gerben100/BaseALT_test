@@ -11,4 +11,4 @@ include_directories(${Catch2_INCLUDE_DIRS} ${CURL_INCLUDE_DIRS} ${nlohmann_json_
 
 add_executable(test_test test.cpp)
 
-target_link_libraries(test_test PRIVATE ${Catch2_INCLUDE_DIRS} test_task ${CURL_LIBRARIES} ${nlohmann_json_INCLUDE_DIRS} pthread)
+target_link_libraries(test_test PRIVATE ${Catch2_INCLUDE_DIRS} ${CURL_LIBRARIES} ${nlohmann_json_INCLUDE_DIRS} pthread)
